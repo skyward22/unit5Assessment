@@ -12,6 +12,8 @@ const sequelize = new Sequelize(CONNECTION_STRING, {
 })
 
 module.exports = {
+    
+    
     seed: (req, res) => {
         sequelize.query(`
             drop table if exists cities;
@@ -244,8 +246,8 @@ module.exports = {
         const {name, rating, countryId} = req.body
         
         sequelize.query(`
-        INSERT INTO cities (city_id, name, rating, country_id)
-        VALUES (${cityId}, '${name}', ${rating}}, ${countryId})
+        INSERT INTO cities (name, rating, country_id)
+        VALUES ('${name}', ${rating}, ${countryId})
         returning *;
         `)
             .then(dbRes => res.status(200).send(dbRes[0]))
@@ -254,27 +256,23 @@ module.exports = {
 
     getCities: (req, res) => {
         sequelize.query(`
-        SELECT city_id, ci.country, rating, country_id, c.country
+        SELECT ci.city_id, ci.name as city, ci.rating, c.country_id, c.name as country
         FROM cities AS ci
         JOIN countries AS c
         ON c.country_id = ci.country_id
-        WHERE ci.country = ${cityId};
+        ORDER BY ci.rating DESC;
         `)
             .then(dbRes => res.status(200).send(dbRes[0]))
             .catch(err => console.log(err))
     },
 
     deleteCity: (req, res) => {
-        let {cityId} = req.body
-    
+        const {id} = req.params
+        
         sequelize.query(`
-            UPDATE cities
-            SET delete = true
-            WHERE city_id = ${cityId};
+            DELETE FROM cities
+            WHERE city_id = ${id};
             `)
             .then(dbRes => res.status(200).send(dbRes[0]))
-            .catch(err => req.body)
     }
-
 }
-console.log("hello world that I love so much")
